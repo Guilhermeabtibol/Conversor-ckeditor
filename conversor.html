@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Conversor de MathML para LaTeX</title>
+    <script type="text/javascript" async src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.7/MathJax.js?config=TeX-MML-AM_CHTML"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+        }
+        textarea {
+            width: 100%;
+            margin-bottom: 20px;
+        }
+        pre {
+            background-color: #f0f0f0;
+            padding: 10px;
+            border: 1px solid #ccc;
+        }
+        #mathml-output {
+            border: 1px solid #ccc;
+            padding: 10px;
+            background-color: #f9f9f9;
+        }
+    </style>
+</head>
+<body>
+    <h1>Conversor de MathML para LaTeX</h1>
+    <h2>Coloque sua equação MathML aqui:</h2>
+    <textarea id="mathml-input" rows="10" placeholder="Cole a equação MathML aqui."></textarea>
+    <h2>LaTeX Gerado:</h2>
+    <pre id="latex-output"></pre>
+    <h2>MathML Renderizado:</h2>
+    <div id="mathml-output"></div>
+
+    <script>
+        // Função para processar MathML e gerar LaTeX
+        function processMathML() {
+            var mathMLContent = document.getElementById('mathml-input').value;
+
+            // Limpa qualquer conteúdo anterior
+            document.getElementById('mathml-output').innerHTML = '';
+            document.getElementById('latex-output').textContent = '';
+
+            // Renderiza o MathML
+            var mathNode = document.createElement('div');
+            mathNode.innerHTML = mathMLContent;
+            document.getElementById('mathml-output').appendChild(mathNode);
+
+            // Reprocessa a equação com MathJax para gerar o LaTeX
+            MathJax.Hub.Queue(["Typeset", MathJax.Hub, mathNode], function() {
+                // Aguarda a renderização antes de tentar obter o LaTeX
+                MathJax.Hub.Queue(function() {
+                    try {
+                        // Obtenha o código LaTeX
+                        var jax = MathJax.Hub.getAllJax(mathNode)[0];
+                        if (jax) {
+                            var latexCode = jax.root.toTex();
+                            document.getElementById('latex-output').textContent = latexCode;
+                        } else {
+                            document.getElementById('latex-output').textContent = 'Erro: Não foi possível gerar o LaTeX.';
+                        }
+                    } catch (e) {
+                        console.error("Erro ao gerar o LaTeX: ", e);
+                    }
+                });
+            });
+        }
+
+        // Monitorando mudanças no campo de texto para processar automaticamente
+        document.getElementById('mathml-input').addEventListener('input', processMathML);
+    </script>
+</body>
+</html>

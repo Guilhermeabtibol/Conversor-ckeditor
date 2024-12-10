@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Conversor de Textos</title>
+  <script src="https://cdn.ckeditor.com/4.22.1/full-all/ckeditor.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.4/MathJax.js?config=TeX-AMS_HTML"></script>
+  <style>
+    /* Remover avisos de navegador */
+    .cke_notification_message {
+      display: none !important;
+    }
+    .cke_notification_warning {
+      display: none;
+    }
+  </style>
+</head>
+<body>
+  <h1>Conversor de Textos para Moodle</h1>
+  <textarea id="editor" rows="10"></textarea>
+  <button onclick="convertToGIFT()">Exportar como GIFT</button>
+  <button onclick="convertToXML()">Exportar como XML</button>
+
+  
+  <script>
+    CKEDITOR.replace('editor', {
+      extraPlugins: 'mathjax', // Ativa o plugin MathJax para equações
+      mathJaxLib: 'https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.4/MathJax.js?config=TeX-AMS_HTML', // Define a URL do MathJax
+      height: 400
+    });
+
+    function convertToGIFT() {
+      const content = CKEDITOR.instances.editor.getData();
+      const encodedContent = encodeURIComponent(content); // Codifica o conteúdo para a URL
+      const giftTitle = encodeURIComponent("Título da Questão"); // Título da questão
+      window.location.href = `resultado.html?gift=${encodedContent}&title=${giftTitle}`; // Redireciona para a página de resultados
+    }
+
+    function convertToXML() {
+      const content = CKEDITOR.instances.editor.getData();
+      const encodedContent = encodeURIComponent(content); // Codifica o conteúdo para a URL
+      const xmlTitle = encodeURIComponent("Título da Questão"); // Título da questão
+      window.location.href = `resultado.html?xml=${encodedContent}&title=${xmlTitle}`; // Redireciona para a página de resultados
+    }
+
+    
+// Função para decodificar entidades HTML
+function decodeHTMLEntities(text) {
+  const element = document.createElement('div');
+  if (text) {
+    element.innerHTML = text;
+    return element.textContent || element.innerText;
+  }
+  return '';
+}
+
+// Função para escapar caracteres especiais para XML
+function escapeXML(text) {
+  return text
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;");
+}
+
+// Função para gerar o GIFT
+function generateGIFT(questionText, title = "Título da Questão") {
+  const decodedText = decodeHTMLEntities(questionText);
+  const lines = decodedText.split("\n").filter(line => line.trim() !== "");
+  const question = lines[0]; // Primeira linha é o enunciado
+  const alternatives = lines.slice(1); // Restante são as alternativas
+
+  if (!question || alternatives.length === 0) {
+    throw new Error("O enunciado ou as alternativas estão vazios.");
+  }
+
+  let gift = `::${title}::\n`;
+  gift += question + " {\n";
+
+  alternatives.forEach((alt) => {
+    if (alt.startsWith("*")) {
+      gift += `=${alt.slice(1).trim()}\n`; // Alternativa correta
+    } else {
+      gift += `~${alt.trim()}\n`; // Alternativas incorretas
+    }
+  });
+
+  gift += "}";
+  return gift;
+}
+
+// Função para gerar o XML Moodle
+function generateXML(questionText, title = "Título da Questão") {
+  const decodedText = decodeHTMLEntities(questionText);
+  const lines = decodedText.split("\n").filter(line => line.trim() !== "");
+  const question = lines[0]; // Primeira linha é o enunciado
+  const alternatives = lines.slice(1); // Restante são as alternativas
+
+  if (!question || alternatives.length === 0) {
+    throw new Error("O enunciado ou as alternativas estão vazios.");
+  }
+
+  let xml = `<question type="multichoice">
+  <name>
+    <text>${escapeXML(title)}</text>
+  </name>
+  <questiontext format="html">
+    <text>${escapeXML(question)}</text>
+  </questiontext>`;
+
+  alternatives.forEach((alt) => {
+    const isCorrect = alt.startsWith("*");
+    const text = alt.slice(isCorrect ? 1 : 0).trim();
+
+    xml += `
+  <answer fraction="${isCorrect ? 100 : 0}">
+    <text>${escapeXML(text)}</text>
+    <feedback>
+      <text>${isCorrect ? "Correto!" : "Resposta incorreta."}</text>
+    </feedback>
+  </answer>`;
+  });
+
+  xml += `
+</question>`;
+  return xml;
+}
+
+// Exemplo de entrada do texto com entidades HTML
+const questionText = `Qual &eacute; a capital do Brasil?
+1. S&atilde;o Paulo
+*2. Bras&iacute;lia
+3. Rio de Janeiro
+4. Belo Horizonte`;
+
+// Função para exportar para GIFT e XML
+function exportQuestion() {
+  try {
+    const giftOutput = generateGIFT(questionText, "Capital do Brasil");
+    const xmlOutput = generateXML(questionText, "Capital do Brasil");
+
+    console.log("Exportação para GIFT:");
+    console.log(giftOutput);
+    console.log("\nExportação para XML Moodle:");
+    console.log(xmlOutput);
+  } catch (error) {
+    console.error("Erro ao gerar exportações:", error.message);
+  }
+}
+
+// Chamada da função para gerar as exportações
+exportQuestion();
+  </script>
+
+  <script src="public/script.js"></script>
+</body>
+</html>
