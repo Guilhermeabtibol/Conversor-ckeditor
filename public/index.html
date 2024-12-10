@@ -22,12 +22,18 @@
   <button onclick="convertToGIFT()">Exportar como GIFT</button>
   <button onclick="convertToXML()">Exportar como XML</button>
 
+  //tem um modelo pronto no devtools do google
+  //f12 -> console e vualaaaa
+  //tem um modelo la pronto q esta no script.js
+
+  //botao funciona mas ele necessita dos "~ e =" para dizer o resultado das questoes mas ainda n apresenta resultado
+  <button onclick="convertBoth()">Converte logo os dois</button>
   
   <script>
     CKEDITOR.replace('editor', {
       extraPlugins: 'mathjax', // Ativa o plugin MathJax para equações
       mathJaxLib: 'https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.4/MathJax.js?config=TeX-AMS_HTML', // Define a URL do MathJax
-      height: 400
+      height: 320
     });
 
     function convertToGIFT() {
@@ -44,6 +50,22 @@
       window.location.href = `resultado.html?xml=${encodedContent}&title=${xmlTitle}`; // Redireciona para a página de resultados
     }
 
+    function convertBoth() {
+    const content = CKEDITOR.instances.editor.getData();
+    const giftTitle = encodeURIComponent("Título da Questão");
+    const xmlTitle = encodeURIComponent("Título da Questão");
+
+    // Gera GIFT
+    const giftOutput = generateGIFT(content, "Título da Questão");
+    localStorage.setItem('gift', giftOutput);
+
+    // Gera XML
+    const xmlOutput = generateXML(content, "Título da Questão");
+    localStorage.setItem('xml', xmlOutput);
+
+    // Redireciona para a página de resultados
+    window.location.href = 'resultado.html';
+}
     
 // Função para decodificar entidades HTML
 function decodeHTMLEntities(text) {

@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Conversor de MathML para LaTeX</title>
-    <script type="text/javascript" async src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.7/MathJax.js?config=TeX-MML-AM_CHTML"></script>
+    <script type="text/javascript" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -35,9 +35,11 @@
     <h2>MathML Renderizado:</h2>
     <div id="mathml-output"></div>
 
+    //SOO DEUS SABE PQ NAO CONVERTE
+
     <script>
         // Função para processar MathML e gerar LaTeX
-        function processMathML() {
+        async function processMathML() {
             var mathMLContent = document.getElementById('mathml-input').value;
 
             // Limpa qualquer conteúdo anterior
@@ -50,22 +52,19 @@
             document.getElementById('mathml-output').appendChild(mathNode);
 
             // Reprocessa a equação com MathJax para gerar o LaTeX
-            MathJax.Hub.Queue(["Typeset", MathJax.Hub, mathNode], function() {
-                // Aguarda a renderização antes de tentar obter o LaTeX
-                MathJax.Hub.Queue(function() {
-                    try {
-                        // Obtenha o código LaTeX
-                        var jax = MathJax.Hub.getAllJax(mathNode)[0];
-                        if (jax) {
-                            var latexCode = jax.root.toTex();
-                            document.getElementById('latex-output').textContent = latexCode;
-                        } else {
-                            document.getElementById('latex-output').textContent = 'Erro: Não foi possível gerar o LaTeX.';
-                        }
-                    } catch (e) {
-                        console.error("Erro ao gerar o LaTeX: ", e);
+            await MathJax.typesetPromise([mathNode]).then(() => {
+                try {
+                    // Obtenha o código LaTeX
+                    const jax = MathJax.startup.getComponents(mathNode);
+                    if (jax.length > 0) {
+                        var latexCode = jax[0].getTeX();
+                        document.getElementById('latex-output').textContent = latexCode;
+                    } else {
+                        document.getElementById('latex-output').textContent = 'Erro: Não foi possível gerar o LaTeX.';
                     }
-                });
+                } catch (e) {
+                    console.error("Erro ao gerar o LaTeX: ", e);
+                }
             });
         }
 

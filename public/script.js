@@ -121,9 +121,22 @@ exportQuestion();
 // Função para exibir os dados
 function displayResults() {
   const params = getQueryParams();
-  document.getElementById("giftOutput").textContent = params.gift || "Nenhum dado GIFT disponível.";
-  document.getElementById("xmlOutput").textContent = params.xml || "Nenhum dado XML disponível.";
-}
+  const giftOutput = params.gift || "Nehum dado GIFT disponivel";
+  const xmlOutput = params.xml || "Nenhum dado XML disponivel";
 
+  document.getElementById("giftOutput").textContent = giftOutput;
+  document.getElementById("xmlOutput").textContent = xmlOutput;
+
+  // Armazenando os resultados no localStorage
+  localStorage.setItem('gift', giftOutput);
+  localStorage.setItem('xml', xmlOutput);
+}
 // Chama a função para exibir os resultados
 displayResults();
+
+//adiciona evento ao botao de voltar
+document.addEventListener("DOMContentLoaded", function() {
+  document.getElementById("backButton").addEventListener("click", function() {
+      window.location.href = './index.html';
+  });
+});
